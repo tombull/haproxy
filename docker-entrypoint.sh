@@ -34,7 +34,7 @@ function reload_config {
   sleep 1
   shift
   set -- "$(which haproxy)" -sf $(cat /run/haproxy.pid) "$@"
-  exec "$@"
+  "$@"
   shift 3
   set -- "$(which haproxy)" "$@"
   iptables -D INPUT -p tcp --dport $PORTS_TO_DROP_SYN_ON_RESTART --syn -j DROP
@@ -52,8 +52,8 @@ if [ "$1" = 'haproxy' ]; then
 	shift # "haproxy"
 	set -- "$(which haproxy)" -D -p /run/haproxy.pid "$@"
   set_up
-  exec "$@"
-  sleep 5
+  "$@"
+  sleep 1
   while kill -0 $(cat /run/haproxy.pid) 2> /dev/null; do
     sleep 5
   done
