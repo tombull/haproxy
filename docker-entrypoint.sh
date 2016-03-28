@@ -2,6 +2,7 @@
 
 INITIAL_IP_NONLOCAL_SETTING="1"
 PORTS_TO_DROP_SYN_ON_RESTART=${HAPROXY_PORTS:-"80,443"}
+PORTS_TO_DROP_SYN_ON_RESTART_ARRAY=(${PORTS_TO_DROP_SYN_ON_RESTART//,/ })
 
 function clean_up {
   kill -s SIGUSR1 $(cat /run/haproxy.pid) 2> /dev/null
@@ -30,14 +31,20 @@ function set_up {
 }
 
 function reload_config {
-  iptables -I INPUT -p tcp --dports $PORTS_TO_DROP_SYN_ON_RESTART --syn -j DROP
+  for PROXY_PORT in "${PORTS_TO_DROP_SYN_ON_RESTART_ARRAY[@]}"
+  do
+    iptables -I INPUT -p tcp --dport $PROXY_PORT --syn -j DROP
+  done
   sleep 1
   shift
   set -- "$(which haproxy)" -sf $(cat /run/haproxy.pid) "$@"
   "$@"
   shift 3
   set -- "$(which haproxy)" "$@"
-  iptables -D INPUT -p tcp --dport $PORTS_TO_DROP_SYN_ON_RESTART --syn -j DROP
+  for PROXY_PORT in "${PORTS_TO_DROP_SYN_ON_RESTART_ARRAY[@]}"
+  do
+    iptables -D INPUT -p tcp --dport $PROXY_PORT --syn -j DROP
+  done
 }
 
 trap clean_up SIGINT SIGTERM
