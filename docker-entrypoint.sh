@@ -49,11 +49,11 @@ if [ "${1#-}" != "$1" ]; then
 fi
 
 if [ "$1" = 'haproxy' ]; then
-	# if the user wants "haproxy", let's use "haproxy-systemd-wrapper" instead so we can have proper reloadability implemented by upstream
 	shift # "haproxy"
 	set -- "$(which haproxy)" -D -p /run/haproxy.pid "$@"
   set_up
   exec "$@"
+  sleep 5
   while kill -0 $(cat /run/haproxy.pid) 2> /dev/null; do
     sleep 5
   done
