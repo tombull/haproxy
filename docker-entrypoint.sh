@@ -5,7 +5,7 @@ PORTS_TO_DROP_SYN_ON_RESTART=${HAPROXY_PORTS:-"80,443"}
 
 function clean_up {
   kill -s SIGUSR1 $(cat /run/haproxy.pid) 2> /dev/null
-  COUNTER = 0
+  COUNTER=0
   while kill -0 $(cat /run/haproxy.pid) 2> /dev/null && [ $COUNTER -lt 295 ]; do
     sleep 1
   done
