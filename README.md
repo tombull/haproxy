@@ -4,7 +4,7 @@ Docker container for HAProxy with transparent proxying and zero-downtime reloads
 
 ## Zero-Downtime Reloads
 
-When HAProxy reloads using its 'graceful reload' feature, there's a tiny amount of time where a number of packets might be dropped in the process. This is well documented elsewhere around the internet. This container uses the 'drop syn packets' technique to mitigate that. There are more sophisticated techniques available which lead to lower delays on a restart (for example the Yelp qdisc technique). If you'd like to implement one of those in this container, feel free to fork. Pull requests gratefully received.
+When HAProxy reloads using its 'graceful reload' feature, there's a tiny amount of time where a number of packets might be dropped in the process. This is well documented elsewhere around the internet. This container uses the 'drop syn packets' technique to mitigate that. There are more sophisticated techniques available which lead to lower delays on a restart. If you'd like to implement one of those (for example, a variation of [the Yelp qdisc technique](http://engineeringblog.yelp.com/2015/04/true-zero-downtime-haproxy-reloads.html) that works for incoming traffic or the [unbounce IP tableflip technique](http://inside.unbounce.com/product-dev/haproxy-reloads/)) in this container, feel free to fork. Pull requests gratefully received.
 
 By default, the container assumes HAProxy will be listening on ports 80 & 443. If you're using HAProxy on different ports, you can alter the reload process using this environment variable when you run the container:
 
@@ -37,6 +37,8 @@ xt_TPROXY
 ```
 
 Running the container with `--net=host` and the capabilities `NET_ADMIN` and `NET_RAW` is completely unavoidable.
+
+**Final Note:** If you don't want transparent TCP proxying, and you just want graceful reloading, in theory you can just use the `NET_ADMIN` capability and nothing else. At best, you will get some odd but harmless iptables rules cropping up somewhere, at worst it's just going to break in weird and horrible ways. **I've not tested this, so I don't know what exactly will happen!**
 
 ### When stopping the container
 
