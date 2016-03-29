@@ -76,7 +76,7 @@ if [ "$1" = 'haproxy' ]; then
   "$@"
   sleep 1
   while kill -0 $(cat /run/haproxy.pid) 2> /dev/null; do
-    sleep 5
+    sleep 1
   done
   clean_up
 else
