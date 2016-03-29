@@ -45,6 +45,7 @@ function reload_config {
     iptables -I INPUT -p tcp --dport $PROXY_PORT --syn -j DROP
   done
   sleep 1
+  set -- "$HAPROXY_START_COMMAND"
   shift
   set -- "$(which haproxy)" -sf $(cat /run/haproxy.pid) "$@"
   echo "Restarting HAProxy with command '$@'"
@@ -71,6 +72,7 @@ if [ "$1" = 'haproxy' ]; then
 	set -- "$(which haproxy)" -D -p /run/haproxy.pid "$@"
   set_up
   echo "Starting HAProxy with command '$@'"
+  HAPROXY_START_COMMAND="$@"
   "$@"
   sleep 1
   while kill -0 $(cat /run/haproxy.pid) 2> /dev/null; do
