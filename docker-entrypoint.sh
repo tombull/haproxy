@@ -4,6 +4,13 @@ INITIAL_IP_NONLOCAL_SETTING="1"
 PORTS_TO_DROP_SYN_ON_RESTART=${HAPROXY_PORTS:-"80,443"}
 PORTS_TO_DROP_SYN_ON_RESTART_ARRAY=(${PORTS_TO_DROP_SYN_ON_RESTART//,/ })
 
+# first arg is `-f` or `--some-option`
+if [ "${1#-}" != "$1" ]; then
+	set -- haproxy "$@"
+fi
+
+HAPROXY_START_COMMAND="$@"
+
 function clean_up {
   echo "Sending SIGUSR1 to HAProxy..."
   kill -s SIGUSR1 $(cat /run/haproxy.pid) 2> /dev/null
@@ -47,7 +54,7 @@ function reload_config {
   sleep 1
   set -- "$HAPROXY_START_COMMAND"
   shift
-  set -- "$(which haproxy)" -sf $(cat /run/haproxy.pid) "$@"
+  set -- "$(which haproxy)" -sf $(cat /run/haproxy.pid) -D -p /run/haproxy.pid "$@"
   echo "Restarting HAProxy with command '$@'"
   "$@"
   shift 3
@@ -61,11 +68,6 @@ function reload_config {
 
 trap clean_up SIGINT SIGTERM
 trap reload_config SIGHUP SIGUSR2
-
-# first arg is `-f` or `--some-option`
-if [ "${1#-}" != "$1" ]; then
-	set -- haproxy "$@"
-fi
 
 if [ "$1" = 'haproxy' ]; then
 	shift # "haproxy"
