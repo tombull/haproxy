@@ -52,14 +52,11 @@ function reload_config {
     iptables -I INPUT -p tcp --dport $PROXY_PORT --syn -j DROP
   done
   sleep 1
-  echo "HAPROXY_START_COMMAND = $HAPROXY_START_COMMAND"
   set -- $HAPROXY_START_COMMAND
   shift
   set -- "$(which haproxy)" -sf $(cat /run/haproxy.pid) -D -p /run/haproxy.pid "$@"
   echo "Restarting HAProxy with command '$@'"
   "$@"
-  shift 3
-  set -- "$(which haproxy)" "$@"
   for PROXY_PORT in "${PORTS_TO_DROP_SYN_ON_RESTART_ARRAY[@]}"
   do
     echo "Dropping iptables SYN drop rule for TCP port $PROXY_PORT"
@@ -75,7 +72,6 @@ if [ "$1" = 'haproxy' ]; then
 	set -- "$(which haproxy)" -D -p /run/haproxy.pid "$@"
   set_up
   echo "Starting HAProxy with command '$@'"
-  HAPROXY_START_COMMAND="$@"
   "$@"
   sleep 1
   while kill -0 $(cat /run/haproxy.pid) 2> /dev/null; do
